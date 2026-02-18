@@ -1,36 +1,135 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Co-Browsing Portfolio Chatbot (Next.js + Gemini)
 
-## Getting Started
+This project implements an AI co-browsing assistant for a portfolio website.
 
-First, run the development server:
+The assistant can:
+- Understand portfolio content from a live DOM snapshot (no hard-coded answers).
+- Respond conversationally with short-term context.
+- Trigger tool-based page actions from user intent:
+  - `scroll_by`
+  - `navigate_to_section`
+  - `click_element`
+  - `highlight_element`
+  - `fill_input`
+
+## Tech Stack
+
+- Next.js (App Router, TypeScript)
+- React
+- Gemini API (`gemini-2.5-flash` by default)
+- Vercel-ready deployment
+
+## Project Structure
+
+- `src/app/page.tsx`: two-column app shell (portfolio + chat panel).
+- `src/components/portfolio-content.tsx`: portfolio sections and form.
+- `src/components/chat-panel.tsx`: chat UI + client orchestration loop.
+- `src/lib/page-snapshot.ts`: dynamic DOM extraction for sections/elements.
+- `src/lib/tool-runner.ts`: frontend tool execution against the DOM.
+- `src/lib/tool-definitions.ts`: tool schema passed to Gemini.
+- `src/app/api/chat/route.ts`: Gemini orchestration API route.
+- `src/lib/types.ts`: shared request/response/types.
+
+## Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create environment file:
+
+```bash
+cp .env.example .env.local
+```
+
+3. Add your Gemini key in `.env.local`:
+
+```env
+GEMINI_API_KEY=your_google_ai_studio_key
+GEMINI_MODEL=gemini-2.5-flash
+```
+
+4. Start dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How the Co-Browsing Loop Works
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. User message is sent from `chat-panel` with:
+   - chat history
+   - fresh `pageSnapshot`
+2. `/api/chat` asks Gemini to either:
+   - respond directly, or
+   - return tool calls
+3. Client executes tool calls with `tool-runner`.
+4. Client sends tool execution results back to `/api/chat`.
+5. Gemini produces a final assistant response grounded in tool outcomes.
 
-## Learn More
+## API Contract
 
-To learn more about Next.js, take a look at the following resources:
+`POST /api/chat`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Request body:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```ts
+{
+  message: string;
+  history: ChatMessage[];
+  pageSnapshot: PageSnapshot;
+  toolResults?: ToolResult[];
+}
+```
 
-## Deploy on Vercel
+Response body:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```ts
+{
+  assistantMessage: string;
+  toolCalls?: ToolCall[];
+  awaitingToolResults: boolean;
+}
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Manual Test Prompts
+
+Use these in local testing and in your demo video:
+
+1. `What projects are showcased here?`
+2. `Go to the projects section and highlight the most recent one.`
+3. `Open the GitHub link for PulseCart Analytics.`
+4. `Fill contact form with name Alex and email alex@test.com.`
+5. `Open that one.`
+6. `Highlight a section called testimonials.`
+7. `Show projects` then `Highlight the second one.`
+
+## Build and Lint
+
+```bash
+npm run lint
+npm run build
+```
+
+## Deploy to Vercel
+
+1. Push this repo to GitHub.
+2. Import the repo in Vercel.
+3. Add environment variables in Vercel:
+   - `GEMINI_API_KEY`
+   - `GEMINI_MODEL` (optional)
+4. Deploy.
+
+## Deliverables Reminder
+
+- GitHub repo link
+- Vercel live URL
+- 2-5 minute demo video showing:
+  - user prompt
+  - assistant response
+  - corresponding page action
+
