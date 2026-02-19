@@ -45,7 +45,7 @@ export function PortfolioContent() {
       <header className="site-header">
         <p className="eyebrow">Product Engineer Portfolio</p>
         <div className="title-row">
-          <h1>Nia Verma</h1>
+          <h1>Chandan Vishwakarma</h1>
           <p className="role-pill">Building practical AI interfaces</p>
         </div>
         <p className="header-summary">

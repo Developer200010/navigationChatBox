@@ -19,7 +19,7 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Nia Verma | Co-Browsing Portfolio",
+  title: "CV | Co-Browsing Portfolio",
   description:
     "A portfolio with an AI co-browsing assistant powered by Gemini tool calls.",
 };
